@@ -13,10 +13,19 @@ const Seat = require("./models/TheatreSeat");
 const Performance = require("./models/TheatrePerformance");
 const Booking = require("./models/TheatreBooking");
 
-const port = 3001;
+const port = process.env.PORT || 3001;
 const app = express();
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://prototype-theatre-lct1.vercel.app",
+    ],
+    credentials: true,
+  })
+);
 app.use(express.static("../frontend/dist"));
 app.use(cookieParser());
 app.use(express.json());
@@ -276,7 +285,17 @@ mongoose
   .connect(
     "mongodb+srv://rezvukhinaan:an.na_rez@cluster0.yxbtl5b.mongodb.net/prototype_theatre?retryWrites=true&w=majority&appName=Cluster0"
   )
-  .then(() => {
+  .then(async () => {
+    // Удаляем старый уникальный индекс bookingNumber_1, чтобы не мешал новым покупкам
+    try {
+      await Booking.collection.dropIndex("bookingNumber_1");
+      console.log("Dropped legacy index bookingNumber_1 on bookings collection");
+    } catch (err) {
+      if (err.codeName !== "IndexNotFound" && err.code !== 27) {
+        console.error("Failed to drop legacy index bookingNumber_1:", err.message);
+      }
+    }
+
     app.listen(port, () => {
       console.log(`Server started on port ${port}`);
     });

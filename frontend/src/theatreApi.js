@@ -1,8 +1,13 @@
 /**
- * Небольшой изолированный API-клиент именно для прототипа театра,
- * чтобы не трогать существующие файлы другого проекта.
+ * Небольшой изолированный API-клиент именно для прототипа театра.
+ * Базовый URL выбирается в зависимости от окружения:
+ * - локально: http://localhost:3001
+ * - в продакшене: backend на Render.
  */
-const API_BASE_URL = "http://localhost:3001";
+const API_BASE_URL =
+  (typeof window !== "undefined" && window.location.hostname.includes("localhost"))
+    ? "http://localhost:3001"
+    : "https://prototype-theatre-1.onrender.com";
 
 async function request(endpoint, options = {}) {
   const { method = "GET", body, headers = {} } = options;
